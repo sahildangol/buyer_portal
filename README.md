@@ -44,7 +44,7 @@ cp .env.sample .env
 - `DB_PASSWORD`
 - `DB_NAME`
 - `DB_PORT`
-- `API_PORT`
+- `PORT`
 - `JWT_SECRET`
 - `JWT_EXPIRES_IN`
 
