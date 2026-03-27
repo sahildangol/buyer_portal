@@ -6,7 +6,7 @@ export class AuthController {
   static async register(req: Request, res: Response, next: NextFunction) {
     try {
       const user = await AuthService.register(req.body);
-      return successResponse(res, 201, "User Registered Successfully", {
+      return successResponse(res, 201, "User registered successfully", {
         user,
       });
     } catch (error) {
@@ -17,7 +17,7 @@ export class AuthController {
   static async login(req: Request, res: Response, next: NextFunction) {
     try {
       const result = await AuthService.login(req.body);
-      return successResponse(res, 200, "Login Successful", result);
+      return successResponse(res, 200, "Login successful", result);
     } catch (error) {
       next(error);
     }

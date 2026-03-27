@@ -1,6 +1,7 @@
 import express, { Application, NextFunction, Request, Response } from "express";
 import cors from "cors";
 import authRoutes from "./routes/auth.routes";
+import propertyRoutes from "./routes/property.routes";
 import { globalErrorHandler } from "./middleware/error.middleware";
 import { AppError } from "./utils/AppError";
 
@@ -15,10 +16,10 @@ app.get("/health", (req: Request, res: Response) => {
 });
 
 app.use("/api/auth", authRoutes);
+app.use("/api/properties", propertyRoutes);
 
-// 404 handler (Express 5 requires named wildcard)
 app.all("/{*path}", (req: Request, res: Response, next: NextFunction) => {
-  next(new AppError(`Can't Find ${req.originalUrl} on this Search!`, 404));
+  next(new AppError(`Route ${req.originalUrl} not found`, 404));
 });
 
 app.use(globalErrorHandler);

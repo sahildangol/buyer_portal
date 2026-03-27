@@ -43,7 +43,7 @@ export class AuthService {
     });
 
     if (existingUser) {
-      throw new AppError("User already Exist with this Email", 400);
+      throw new AppError("User already exists with this email", 400);
     }
 
     const hashedPassword = await bcrypt.hash(password, 12);
@@ -71,20 +71,20 @@ export class AuthService {
     });
 
     if (!user) {
-      throw new AppError("Invalid Credentials", 401);
+      throw new AppError("Invalid credentials", 401);
     }
 
     const isPasswordValid = await bcrypt.compare(password, user.password);
 
     if (!isPasswordValid) {
-      throw new AppError("Invalid Credentials", 401);
+      throw new AppError("Invalid credentials", 401);
     }
 
     const payload = {
       id: user.id,
       email: user.email,
       role: user.role,
-    } as object;
+    };
 
     const token: string = jwt.sign(payload, config.jwtSecret, {
       expiresIn: config.jwtExpiresIn as SignOptions["expiresIn"],

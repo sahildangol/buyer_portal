@@ -3,19 +3,20 @@ import { AppError } from "../utils/AppError";
 import { config } from "../config/env";
 
 export const globalErrorHandler = (
-  err: any,
-  req: Request,
+  err: unknown,
+  _req: Request,
   res: Response,
-  next: NextFunction,
+  _next: NextFunction,
 ) => {
   const statusCode = err instanceof AppError ? err.statusCode : 500;
-  const message = err.message || "Internal Server Error";
+  const message = err instanceof Error ? err.message : "Internal Server Error";
+  const stack = err instanceof Error ? err.stack : undefined;
 
   res.status(statusCode).json({
     success: false,
     error: {
       message,
-      stack: config.nodeEnvironment === "development" ? err.stack : undefined,
+      stack: config.nodeEnvironment === "development" ? stack : undefined,
     },
   });
 };
