@@ -1,6 +1,6 @@
 import axios, { AxiosError, InternalAxiosRequestConfig } from "axios";
 import { config } from "../config/env.config";
-import { useAuthStore } from "../store/auth.store";
+import { forceLogout, getAuthToken } from "@/store/auth.store";
 import type { ApiErrorResponse } from "../types/api.types";
 
 type LegacyErrorResponse = {
@@ -18,7 +18,7 @@ const api = axios.create({
 });
 
 api.interceptors.request.use((request: InternalAxiosRequestConfig) => {
-  const token = useAuthStore.getState().token;
+  const token = getAuthToken();
 
   if (token && request.headers) {
     request.headers.Authorization = `Bearer ${token}`;
@@ -53,7 +53,7 @@ api.interceptors.response.use(
   (response) => response,
   (error: AxiosError<ApiErrorPayload>) => {
     if (error.response?.status === 401) {
-      useAuthStore.getState().actions.logout();
+      forceLogout();
     }
 
     return Promise.reject(new Error(getErrorMessage(error)));

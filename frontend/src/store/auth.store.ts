@@ -1,8 +1,8 @@
 import { create } from "zustand";
-import { persist, createJSONStorage } from "zustand/middleware";
-import type { User } from "../types/api.types";
+import { createJSONStorage, persist } from "zustand/middleware";
+import type { User } from "@/types/api.types";
 
-interface AuthState {
+type AuthState = {
   user: User | null;
   token: string | null;
   isAuthenticated: boolean;
@@ -10,9 +10,9 @@ interface AuthState {
   actions: {
     setAuth: (user: User, token: string) => void;
     logout: () => void;
-    setHasHydrated: (state: boolean) => void;
+    setHasHydrated: (hasHydrated: boolean) => void;
   };
-}
+};
 
 export const useAuthStore = create<AuthState>()(
   persist(
@@ -23,10 +23,8 @@ export const useAuthStore = create<AuthState>()(
       hasHydrated: false,
       actions: {
         setAuth: (user, token) => set({ user, token, isAuthenticated: true }),
-        logout: () => {
-          set({ user: null, token: null, isAuthenticated: false });
-        },
-        setHasHydrated: (state) => set({ hasHydrated: state }),
+        logout: () => set({ user: null, token: null, isAuthenticated: false }),
+        setHasHydrated: (hasHydrated) => set({ hasHydrated }),
       },
     }),
     {
@@ -44,7 +42,11 @@ export const useAuthStore = create<AuthState>()(
   ),
 );
 
-export const useAuthUser = () => useAuthStore((s) => s.user);
-export const useIsAuthenticated = () => useAuthStore((s) => s.isAuthenticated);
-export const useHasHydrated = () => useAuthStore((s) => s.hasHydrated);
-export const useAuthActions = () => useAuthStore((s) => s.actions);
+export const useAuthUser = () => useAuthStore((state) => state.user);
+export const useIsAuthenticated = () =>
+  useAuthStore((state) => state.isAuthenticated);
+export const useHasHydrated = () => useAuthStore((state) => state.hasHydrated);
+export const useAuthActions = () => useAuthStore((state) => state.actions);
+
+export const getAuthToken = () => useAuthStore.getState().token;
+export const forceLogout = () => useAuthStore.getState().actions.logout();

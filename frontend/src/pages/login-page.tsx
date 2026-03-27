@@ -28,6 +28,7 @@ export const LoginPage = () => {
     email: "",
     password: "",
   });
+  const [submitError, setSubmitError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<
     Partial<Record<keyof LoginInput, string>>
   >({});
@@ -36,11 +37,14 @@ export const LoginPage = () => {
     mutationFn: apiClient.login,
     onSuccess: (result) => {
       setAuth(result.user, result.token);
+      setSubmitError(null);
       toast.success("Logged in successfully");
       navigate("/", { replace: true });
     },
     onError: (error) => {
-      toast.error(getErrorMessage(error));
+      const message = getErrorMessage(error);
+      setSubmitError(message);
+      toast.error(message);
     },
   });
 
@@ -54,10 +58,12 @@ export const LoginPage = () => {
         email: issues.email?.[0],
         password: issues.password?.[0],
       });
+      setSubmitError(null);
       return;
     }
 
     setFieldErrors({});
+    setSubmitError(null);
     loginMutation.mutate(parsed.data);
   };
 
@@ -80,6 +86,7 @@ export const LoginPage = () => {
                 autoComplete="email"
                 placeholder="you@example.com"
                 value={formValues.email}
+                disabled={loginMutation.isPending}
                 onChange={(event) =>
                   setFormValues((prev) => ({ ...prev, email: event.target.value }))
                 }
@@ -97,6 +104,7 @@ export const LoginPage = () => {
                 autoComplete="current-password"
                 placeholder="••••••••"
                 value={formValues.password}
+                disabled={loginMutation.isPending}
                 onChange={(event) =>
                   setFormValues((prev) => ({ ...prev, password: event.target.value }))
                 }
@@ -109,6 +117,11 @@ export const LoginPage = () => {
             <Button type="submit" className="w-full" disabled={loginMutation.isPending}>
               {loginMutation.isPending ? "Signing in..." : "Sign In"}
             </Button>
+            {submitError ? (
+              <p className="text-sm text-destructive" role="alert">
+                {submitError}
+              </p>
+            ) : null}
           </form>
 
           <p className="mt-4 text-sm text-muted-foreground">

@@ -1,5 +1,6 @@
 import { useMemo } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Heart } from "lucide-react";
 import { toast } from "sonner";
 import apiClient from "@/api/api.client";
 import { Badge } from "@/components/ui/badge";
@@ -12,6 +13,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import type { Property } from "@/types/api.types";
 
 const currency = new Intl.NumberFormat("en-US", {
@@ -76,6 +78,10 @@ const PropertyGrid = ({
                 disabled={isLoading}
                 onClick={() => onToggleFavourite(property.id)}
               >
+                <Heart
+                  className={`mr-2 h-4 w-4 ${isFavourite ? "fill-current" : ""}`}
+                  aria-hidden
+                />
                 {isLoading
                   ? "Updating..."
                   : isFavourite
@@ -86,6 +92,28 @@ const PropertyGrid = ({
           </Card>
         );
       })}
+    </div>
+  );
+};
+
+const PropertySkeletonGrid = () => {
+  return (
+    <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+      {Array.from({ length: 6 }).map((_, index) => (
+        <Card key={index} className="h-full border-border">
+          <CardHeader>
+            <Skeleton className="h-5 w-2/3" />
+            <Skeleton className="h-4 w-full" />
+            <Skeleton className="h-4 w-5/6" />
+          </CardHeader>
+          <CardContent>
+            <Skeleton className="h-5 w-24" />
+          </CardContent>
+          <CardFooter>
+            <Skeleton className="h-9 w-36" />
+          </CardFooter>
+        </Card>
+      ))}
     </div>
   );
 };
@@ -128,7 +156,15 @@ export const DashboardPage = () => {
   const errorMessage = getErrorMessage(propertiesQuery.error ?? favouritesQuery.error);
 
   if (isInitialLoading) {
-    return <p className="text-sm text-muted-foreground">Loading dashboard...</p>;
+    return (
+      <section className="space-y-4">
+        <div className="space-y-1">
+          <h2 className="text-xl font-semibold text-foreground">Properties</h2>
+          <p className="text-sm text-muted-foreground">Loading dashboard...</p>
+        </div>
+        <PropertySkeletonGrid />
+      </section>
+    );
   }
 
   if (hasError) {
@@ -160,6 +196,25 @@ export const DashboardPage = () => {
         <p className="text-sm text-muted-foreground">
           Browse available properties and manage your favourites.
         </p>
+      </div>
+
+      <div className="grid gap-4 md:grid-cols-2">
+        <Card className="border-border">
+          <CardHeader>
+            <CardTitle className="text-base">Total Properties</CardTitle>
+            <CardDescription>
+              {propertiesQuery.data?.length ?? 0} available in your portal.
+            </CardDescription>
+          </CardHeader>
+        </Card>
+        <Card className="border-border">
+          <CardHeader>
+            <CardTitle className="text-base">My Favourites</CardTitle>
+            <CardDescription>
+              {favouritesQuery.data?.length ?? 0} properties marked as favourite.
+            </CardDescription>
+          </CardHeader>
+        </Card>
       </div>
 
       <PropertyGrid

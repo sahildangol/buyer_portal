@@ -1,6 +1,7 @@
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
-import { useAuthUser, useAuthActions } from "@/store/auth.store";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { useAuthActions, useAuthUser } from "@/store/auth.store";
 import { toast } from "sonner";
 
 export const MainLayout = () => {
@@ -36,6 +37,7 @@ export const MainLayout = () => {
           <span className="text-sm text-muted-foreground">
             Welcome, {user?.name ?? "User"}
           </span>
+          <Badge variant="outline">{user?.role ?? "BUYER"}</Badge>
           <Button variant="outline" size="sm" onClick={handleLogout}>
             Logout
           </Button>

@@ -29,15 +29,19 @@ export const RegisterPage = () => {
   const [fieldErrors, setFieldErrors] = useState<
     Partial<Record<keyof RegisterInput, string>>
   >({});
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   const registerMutation = useMutation({
     mutationFn: apiClient.register,
     onSuccess: () => {
+      setSubmitError(null);
       toast.success("Account created. You can sign in now.");
       navigate("/login", { replace: true });
     },
     onError: (error) => {
-      toast.error(getErrorMessage(error));
+      const message = getErrorMessage(error);
+      setSubmitError(message);
+      toast.error(message);
     },
   });
 
@@ -52,10 +56,12 @@ export const RegisterPage = () => {
         email: issues.email?.[0],
         password: issues.password?.[0],
       });
+      setSubmitError(null);
       return;
     }
 
     setFieldErrors({});
+    setSubmitError(null);
     registerMutation.mutate(parsed.data);
   };
 
@@ -78,6 +84,7 @@ export const RegisterPage = () => {
                 autoComplete="name"
                 placeholder="Your full name"
                 value={formValues.name}
+                disabled={registerMutation.isPending}
                 onChange={(event) =>
                   setFormValues((prev) => ({ ...prev, name: event.target.value }))
                 }
@@ -95,6 +102,7 @@ export const RegisterPage = () => {
                 autoComplete="email"
                 placeholder="you@example.com"
                 value={formValues.email}
+                disabled={registerMutation.isPending}
                 onChange={(event) =>
                   setFormValues((prev) => ({ ...prev, email: event.target.value }))
                 }
@@ -112,6 +120,7 @@ export const RegisterPage = () => {
                 autoComplete="new-password"
                 placeholder="At least 6 characters"
                 value={formValues.password}
+                disabled={registerMutation.isPending}
                 onChange={(event) =>
                   setFormValues((prev) => ({ ...prev, password: event.target.value }))
                 }
@@ -128,6 +137,11 @@ export const RegisterPage = () => {
             >
               {registerMutation.isPending ? "Creating account..." : "Create Account"}
             </Button>
+            {submitError ? (
+              <p className="text-sm text-destructive" role="alert">
+                {submitError}
+              </p>
+            ) : null}
           </form>
 
           <p className="mt-4 text-sm text-muted-foreground">
