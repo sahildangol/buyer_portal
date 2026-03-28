@@ -108,6 +108,13 @@ pnpm --dir backend db:seed
 - `http://localhost:5000`
 - Frontend: `http://localhost:3000`
 
+## Frontend Routes
+
+- `/login` - sign in page
+- `/register` - account creation page
+- `/` - dashboard with all properties + favourite toggles
+- `/favourites` - lists only the logged-in user's favourite properties
+
 ## Response Format
 
 Successful responses:

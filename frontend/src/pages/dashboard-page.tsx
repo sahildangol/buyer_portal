@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Heart } from "lucide-react";
+import { Link } from "react-router-dom";
 import { toast } from "sonner";
 import apiClient from "@/api/api.client";
 import { Badge } from "@/components/ui/badge";
@@ -14,6 +15,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useAuthUser } from "@/store/auth.store";
 import type { Property } from "@/types/api.types";
 
 const currency = new Intl.NumberFormat("en-US", {
@@ -120,6 +122,8 @@ const PropertySkeletonGrid = () => {
 
 export const DashboardPage = () => {
   const queryClient = useQueryClient();
+  const user = useAuthUser();
+  const userId = user?.id ?? null;
 
   const propertiesQuery = useQuery({
     queryKey: ["properties"],
@@ -127,8 +131,9 @@ export const DashboardPage = () => {
   });
 
   const favouritesQuery = useQuery({
-    queryKey: ["favourites"],
+    queryKey: ["favourites", userId],
     queryFn: apiClient.getFavourites,
+    enabled: Boolean(userId),
   });
 
   const toggleMutation = useMutation({
@@ -139,7 +144,9 @@ export const DashboardPage = () => {
           ? "Property added to favourites"
           : "Property removed from favourites",
       );
-      queryClient.invalidateQueries({ queryKey: ["favourites"] });
+      if (userId) {
+        queryClient.invalidateQueries({ queryKey: ["favourites", userId] });
+      }
     },
     onError: (error) => {
       toast.error(getErrorMessage(error));
@@ -151,8 +158,9 @@ export const DashboardPage = () => {
     [favouritesQuery.data],
   );
 
-  const isInitialLoading = propertiesQuery.isPending || favouritesQuery.isPending;
-  const hasError = propertiesQuery.isError || favouritesQuery.isError;
+  const isInitialLoading =
+    propertiesQuery.isPending || (Boolean(userId) && favouritesQuery.isPending);
+  const hasError = propertiesQuery.isError || (Boolean(userId) && favouritesQuery.isError);
   const errorMessage = getErrorMessage(propertiesQuery.error ?? favouritesQuery.error);
 
   if (isInitialLoading) {
@@ -192,7 +200,7 @@ export const DashboardPage = () => {
   return (
     <section className="space-y-4">
       <div className="space-y-1">
-        <h2 className="text-xl font-semibold text-foreground">Properties</h2>
+        <h2 className="text-xl font-semibold text-foreground">All Properties</h2>
         <p className="text-sm text-muted-foreground">
           Browse available properties and manage your favourites.
         </p>
@@ -214,6 +222,11 @@ export const DashboardPage = () => {
               {favouritesQuery.data?.length ?? 0} properties marked as favourite.
             </CardDescription>
           </CardHeader>
+          <CardFooter>
+            <Button asChild size="sm" variant="outline">
+              <Link to="/favourites">View My Favourites</Link>
+            </Button>
+          </CardFooter>
         </Card>
       </div>
 

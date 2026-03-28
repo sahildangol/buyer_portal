@@ -3,6 +3,7 @@ import { ProtectedRoute } from "@/components/auth/protected-route";
 import { PublicRoute } from "@/components/auth/public-route";
 import { MainLayout } from "@/layouts/main-layout";
 import { DashboardPage } from "@/pages/dashboard-page";
+import { FavouritesPage } from "@/pages/favourites-page";
 import { LoginPage } from "@/pages/login-page";
 import { RegisterPage } from "@/pages/register-page";
 
@@ -30,6 +31,10 @@ export const router = createBrowserRouter([
           {
             index: true,
             element: <DashboardPage />,
+          },
+          {
+            path: "favourites",
+            element: <FavouritesPage />,
           },
         ],
       },

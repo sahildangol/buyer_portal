@@ -11,13 +11,18 @@ import {
 } from "../schemas/api.schema";
 import type { LoginInput, RegisterInput } from "../types/api.types";
 
+const normalizeEmail = (email: string) => email.trim().toLowerCase();
+
 const apiClient = {
   healthCheck: async () => {
     const response = await api.get("/health");
     return validateResponse(healthSchema, response.data, "health");
   },
   register: async (payload: RegisterInput) => {
-    const response = await api.post("/api/auth/register", payload);
+    const response = await api.post("/api/auth/register", {
+      ...payload,
+      email: normalizeEmail(payload.email),
+    });
     const validated = validateResponse(
       apiSuccessSchema(registerResponseSchema),
       response.data,
@@ -27,7 +32,10 @@ const apiClient = {
     return validated.data.user;
   },
   login: async (payload: LoginInput) => {
-    const response = await api.post("/api/auth/login", payload);
+    const response = await api.post("/api/auth/login", {
+      ...payload,
+      email: normalizeEmail(payload.email),
+    });
     const validated = validateResponse(
       apiSuccessSchema(loginResponseSchema),
       response.data,

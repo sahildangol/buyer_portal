@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
+import { queryClient } from "@/lib/query-client";
 import type { User } from "@/types/api.types";
 
 type AuthState = {
@@ -20,8 +21,14 @@ export const useAuthStore = create<AuthState>()(
       token: null,
       hasHydrated: false,
       actions: {
-        setAuth: (user, token) => set({ user, token }),
-        logout: () => set({ user: null, token: null }),
+        setAuth: (user, token) => {
+          queryClient.clear();
+          set({ user, token });
+        },
+        logout: () => {
+          queryClient.clear();
+          set({ user: null, token: null });
+        },
         setHasHydrated: (hasHydrated) => set({ hasHydrated }),
       },
     }),
