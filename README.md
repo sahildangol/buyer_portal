@@ -20,10 +20,12 @@ Simple full-stack buyer portal with auth and per-user favourites.
 
 ## Quick Start (Docker)
 
-1. Copy env file:
+1. Copy env files:
 
 ```bash
 cp .env.sample .env
+cp backend/.env.sample backend/.env
+cp frontend/.env.sample frontend/.env
 ```
 
 2. Start everything:
