@@ -28,7 +28,7 @@ cp backend/.env.sample backend/.env
 cp frontend/.env.sample frontend/.env
 ```
 
-2. Start everything:
+2. Start everything(On Rooot Directory):
 
 ```bash
 docker compose up -d --build
