@@ -5,7 +5,6 @@ import type { User } from "@/types/api.types";
 type AuthState = {
   user: User | null;
   token: string | null;
-  isAuthenticated: boolean;
   hasHydrated: boolean;
   actions: {
     setAuth: (user: User, token: string) => void;
@@ -19,11 +18,10 @@ export const useAuthStore = create<AuthState>()(
     (set) => ({
       user: null,
       token: null,
-      isAuthenticated: false,
       hasHydrated: false,
       actions: {
-        setAuth: (user, token) => set({ user, token, isAuthenticated: true }),
-        logout: () => set({ user: null, token: null, isAuthenticated: false }),
+        setAuth: (user, token) => set({ user, token }),
+        logout: () => set({ user: null, token: null }),
         setHasHydrated: (hasHydrated) => set({ hasHydrated }),
       },
     }),
@@ -33,7 +31,6 @@ export const useAuthStore = create<AuthState>()(
       partialize: (state) => ({
         user: state.user,
         token: state.token,
-        isAuthenticated: state.isAuthenticated,
       }),
       onRehydrateStorage: () => (state) => {
         state?.actions.setHasHydrated(true);
@@ -44,7 +41,7 @@ export const useAuthStore = create<AuthState>()(
 
 export const useAuthUser = () => useAuthStore((state) => state.user);
 export const useIsAuthenticated = () =>
-  useAuthStore((state) => state.isAuthenticated);
+  useAuthStore((state) => Boolean(state.token));
 export const useHasHydrated = () => useAuthStore((state) => state.hasHydrated);
 export const useAuthActions = () => useAuthStore((state) => state.actions);
 

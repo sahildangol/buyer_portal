@@ -48,7 +48,7 @@ cp .env.sample .env
 - `JWT_SECRET`
 - `JWT_EXPIRES_IN`
 
-## Run With Docker (DB + API)
+## Run With Docker (DB + API + Frontend)
 
 1. Build and start services:
 
@@ -62,13 +62,19 @@ docker compose up -d --build
 docker compose ps
 ```
 
-3. Check API logs:
+3. Check backend logs:
 
 ```bash
 docker compose logs -f backend
 ```
 
-4. Health check:
+4. Check frontend logs:
+
+```bash
+docker compose logs -f frontend
+```
+
+5. Health check:
 
 ```bash
 curl http://localhost:5000/health
@@ -79,6 +85,10 @@ Expected:
 ```json
 { "status": "ok" }
 ```
+
+6. Open frontend:
+
+- `http://localhost:3000`
 
 Schema initialization and property seed are automated on backend container startup.
 The backend runs `prisma db push` and then seeds properties before starting the server.
@@ -93,9 +103,10 @@ pnpm --dir backend exec prisma db push
 pnpm --dir backend db:seed
 ```
 
-## API Base URL
+## Base URLs
 
 - `http://localhost:5000`
+- Frontend: `http://localhost:3000`
 
 ## Response Format
 

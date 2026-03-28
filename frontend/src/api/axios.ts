@@ -8,6 +8,7 @@ type LegacyErrorResponse = {
 };
 
 type ApiErrorPayload = ApiErrorResponse | LegacyErrorResponse;
+const PUBLIC_AUTH_PATHS = ["/auth/login", "/auth/register"];
 
 const api = axios.create({
   baseURL: config.VITE_API_URL,
@@ -49,10 +50,38 @@ const getErrorMessage = (error: AxiosError<ApiErrorPayload>) => {
   return "An unexpected error occurred";
 };
 
+const shouldForceLogout = (error: AxiosError<ApiErrorPayload>) => {
+  if (error.response?.status !== 401) {
+    return false;
+  }
+
+  if (!getAuthToken()) {
+    return false;
+  }
+
+  const requestPath = (() => {
+    if (!error.config?.url) {
+      return "";
+    }
+
+    try {
+      return new URL(error.config.url, config.VITE_API_URL).pathname.toLowerCase();
+    } catch {
+      return error.config.url.toLowerCase();
+    }
+  })();
+
+  const isPublicAuthRequest = PUBLIC_AUTH_PATHS.some((path) =>
+    requestPath.includes(path),
+  );
+
+  return !isPublicAuthRequest;
+};
+
 api.interceptors.response.use(
   (response) => response,
   (error: AxiosError<ApiErrorPayload>) => {
-    if (error.response?.status === 401) {
+    if (shouldForceLogout(error)) {
       forceLogout();
     }
 
