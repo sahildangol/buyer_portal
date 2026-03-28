@@ -1,210 +1,86 @@
-# Buyer Portal API (Take-Home Assessment)
+# Buyer Portal (Take-Home Assessment)
 
-Production-style backend for a simple buyer portal where users can register, login, view properties, and manage their own favourites.
+Simple full-stack buyer portal with auth and per-user favourites.
 
-## What Is Implemented
+## Features
 
-- Authentication with JWT
-- Protected routes with auth middleware
-- Property listing
-- Per-user favourites (strict data isolation)
-- Zod request validation
-- Centralized success and error response wrappers
-- Dockerized API + PostgreSQL setup
+- Register and login with email + password
+- JWT-based authentication
+- Password hashing with `bcryptjs`
+- Buyer dashboard with property list
+- Add/remove favourites
+- Strict per-user favourites isolation (no cross-user leakage)
+- Basic validation and error handling
 
 ## Tech Stack
 
-- Node.js + Express + TypeScript
-- Prisma ORM + PostgreSQL
-- JWT + bcryptjs
-- Docker + Docker Compose
+- Backend: Node.js, Express, TypeScript, Prisma, PostgreSQL
+- Frontend: React, TypeScript, Vite, React Query, Zustand
+- Infra: Docker Compose
 
-## Project Structure (Backend)
+## Quick Start (Docker)
 
-Layered architecture is used:
-
-- `routes` -> `controllers` -> `services` -> `prisma`
-
-## Prerequisites
-
-- Docker + Docker Compose
-- pnpm (only needed for Prisma schema push/seed commands from host)
-
-## Environment Setup
-
-1. Copy root env file:
+1. Copy env file:
 
 ```bash
 cp .env.sample .env
 ```
 
-2. (Recommended) Update `.env` values before running:
-
-- `DB_USER`
-- `DB_PASSWORD`
-- `DB_NAME`
-- `DB_PORT`
-- `PORT`
-- `JWT_SECRET`
-- `JWT_EXPIRES_IN`
-
-## Run With Docker (DB + API + Frontend)
-
-1. Build and start services:
+2. Start everything:
 
 ```bash
 docker compose up -d --build
 ```
 
-2. Check service status:
+3. Open app:
 
-```bash
-docker compose ps
-```
-
-3. Check backend logs:
-
-```bash
-docker compose logs -f backend
-```
-
-4. Check frontend logs:
-
-```bash
-docker compose logs -f frontend
-```
-
-5. Health check:
-
-```bash
-curl http://localhost:5000/health
-```
-
-Expected:
-
-```json
-{ "status": "ok" }
-```
-
-6. Open frontend:
-
-- `http://localhost:3000`
-
-Schema initialization and property seed are automated on backend container startup.
-The backend runs `prisma db push` and then seeds properties before starting the server.
-
-## Manual DB Setup (Optional)
-
-Use this only when you run backend outside Docker:
-
-```bash
-pnpm --dir backend install
-pnpm --dir backend exec prisma db push
-pnpm --dir backend db:seed
-```
-
-## Base URLs
-
-- `http://localhost:5000`
 - Frontend: `http://localhost:3000`
+- Backend health: `http://localhost:5000/health`
+
+Notes:
+- Backend runs `prisma db push` and seeds sample properties on startup.
+
+## Faster Docker Builds
+
+- First build is always slower (downloads base images + dependencies).
+- After that, dependency layers are cached.
+- Use `docker compose up -d` for normal restarts (skip rebuild).
+- Rebuild only what changed:
+
+```bash
+docker compose build backend
+docker compose build frontend
+```
 
 ## Frontend Routes
 
-- `/login` - sign in page
-- `/register` - account creation page
-- `/` - dashboard with all properties + favourite toggles
-- `/favourites` - lists only the logged-in user's favourite properties
+- `/login` - login page
+- `/register` - register page
+- `/` - dashboard (all properties)
+- `/favourites` - only current user’s favourites
 
-## Response Format
+## Core API Endpoints
 
-Successful responses:
-
-```json
-{
-  "success": true,
-  "message": "string",
-  "data": {}
-}
-```
-
-Error responses:
-
-```json
-{
-  "success": false,
-  "error": {
-    "message": "string",
-    "stack": "shown only in development"
-  }
-}
-```
-
-## API Endpoints
-
-### Auth
-
-#### Register
-
+Auth:
 - `POST /api/auth/register`
-- Body:
-
-```json
-{
-  "name": "Sahil",
-  "email": "sahil@example.com",
-  "password": "secret123"
-}
-```
-
-#### Login
-
 - `POST /api/auth/login`
-- Body:
 
-```json
-{
-  "email": "sahil@example.com",
-  "password": "secret123"
-}
-```
-
-- Returns JWT token in `data.token`
-
-### Properties
-
-All routes below require:
-
-- `Authorization: Bearer <token>`
-
-#### Get All Properties
-
+Properties (requires `Authorization: Bearer <token>`):
 - `GET /api/properties`
-
-#### Get My Favourites
-
 - `GET /api/properties/my-favourites`
-
-Returns only properties favourited by the logged-in user.
-
-#### Toggle Favourite
-
 - `POST /api/properties/toggle-favourite`
-- Body:
 
-```json
-{
-  "propertyId": "uuid-property-id"
-}
-```
+## Example Flow
 
-Behavior:
+1. Register
+2. Login and store token
+3. Open dashboard and add favourites
+4. Go to `/favourites` to view only your favourites
+5. Logout, login with another user, favourites stay user-specific
 
-- Adds favourite if it does not exist
-- Removes favourite if it already exists
+## Sample cURL
 
-## Quick cURL Flow
-
-1. Register:
+Register:
 
 ```bash
 curl -X POST http://localhost:5000/api/auth/register \
@@ -212,7 +88,7 @@ curl -X POST http://localhost:5000/api/auth/register \
   -d '{"name":"Sahil","email":"sahil@example.com","password":"secret123"}'
 ```
 
-2. Login:
+Login:
 
 ```bash
 curl -X POST http://localhost:5000/api/auth/login \
@@ -220,38 +96,18 @@ curl -X POST http://localhost:5000/api/auth/login \
   -d '{"email":"sahil@example.com","password":"secret123"}'
 ```
 
-3. Copy token from login response and set:
-
-```bash
-TOKEN="<your_jwt_token>"
-```
-
-4. List properties:
-
-```bash
-curl http://localhost:5000/api/properties \
-  -H "Authorization: Bearer $TOKEN"
-```
-
-5. Toggle favourite:
+Toggle favourite:
 
 ```bash
 curl -X POST http://localhost:5000/api/properties/toggle-favourite \
-  -H "Authorization: Bearer $TOKEN" \
+  -H "Authorization: Bearer <token>" \
   -H "Content-Type: application/json" \
   -d '{"propertyId":"<property_uuid>"}'
 ```
 
-6. Fetch my favourites:
+Get my favourites:
 
 ```bash
 curl http://localhost:5000/api/properties/my-favourites \
-  -H "Authorization: Bearer $TOKEN"
+  -H "Authorization: Bearer <token>"
 ```
-
-## Notes
-
-- Passwords are hashed with bcryptjs
-- JWT auth is stateless
-- Favourites are isolated by logged-in user ID
-- API and DB run independently through Docker Compose

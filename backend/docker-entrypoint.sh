@@ -2,6 +2,7 @@
 set -eu
 
 max_attempts="${DB_INIT_MAX_ATTEMPTS:-20}"
+retry_delay_seconds="${DB_INIT_RETRY_DELAY_SECONDS:-5}"
 attempt=1
 
 echo "Initializing database schema..."
@@ -11,9 +12,9 @@ until ./node_modules/.bin/prisma db push; do
     exit 1
   fi
 
-  echo "Database is not ready. Retrying in 2 seconds... ($attempt/$max_attempts)"
+  echo "Schema initialization failed. Retrying in ${retry_delay_seconds}s... ($attempt/$max_attempts)"
   attempt=$((attempt + 1))
-  sleep 2
+  sleep "$retry_delay_seconds"
 done
 
 echo "Seeding properties..."
